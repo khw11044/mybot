@@ -17,6 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+# 삭제  
+# from chatbot import views
+# 추가
+from django.urls import path, include
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # path('chatbot/', views.index),    -> 수정      
+    path('chatbot/', include('chatbot.urls')),         
 ]
