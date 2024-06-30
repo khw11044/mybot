@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'chatbot/style.css' %}">
+    <title>AIVLE Chat</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div id="back-button" class="back-button">
+                <em>
+                    <i></i><i></i><i></i><i></i><i></i><i></i>
+                </em>
+                <span>Main</span>
+            </div>
+            <div id="admin-button" class="back-button">
+                <em>
+                    <i></i><i></i><i></i><i></i><i></i><i></i>
+                </em>
+                <span>Admin</span>
+            </div>
+            <h3>Chatbot</h3>
+        </div>
+
+        <div class="chat-container">
+            <div id="chat-log"></div>
+            <div class="chat-box" id="typingIndicator">
+                <div class="icon" id="user-icon">
+                    <i class="fa-regular fa-user"></i>
+                </div>
+                <div class="loading" id="user">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+        <div class="faq-container" id="faqContainer">
+            <div class="faq-card" data-question="WTO와 국제통상규범에 대해 알려주세요.">
+                <div>
+                    <i class="fas fa-solid fa-hippo"></i>
+                    <p>국제통상규범</p>
+                </div>
+            </div>
+            <div class="faq-card" data-question="글로벌 환경 정책,산업,기술 동향을 알려주세요.">
+                <div>
+                    <i class="fas fa-solid fa-horse"></i>
+                    <p>국제환경정책</p>
+                </div>
+            </div>
+            <div class="faq-card" data-question="국내에 해외진출 기업을 지원하는 기관이 있나요?">
+                <div>
+                    <i class="fas fa-solid fa-cat"></i>
+                    <p>해외진출지원</p>
+                </div>
+            </div>
+            <div class="faq-card" data-question="아시아 시장에서 인도가 차지하는 비율을 알려주세요.">
+                <div>
+                    <i class="fas fa-solid fa-kiwi-bird"></i>
+                    <p>인도 시장</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="메시지를 입력하세요.">
+            <button id="send-button">
+                <i class="fa-solid fa-paper-plane" id="button-icon"></i>
+            </button>
+            <button id="refresh-button">
+                <i class="fa-solid fa-sync" id="refresh-icon"></i>
+            </button>
+        </div>
+    </div>
+    <script src="{% static 'chatbot/script.js' %}"></script>
+</body>
+</html>

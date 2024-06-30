@@ -1,118 +1,122 @@
-## 05. 템플릿 스태틱 홈화면 
+## 06. 채팅 페이지 추가하기
 
-먼저 템플릿이랑, 스태틱 준비 
+### 1. 직렬화 - chatbot/serializers.py
 
-__TEMPLATES__
+우리는 admin에서 관리 가능한 챗 세션을 미리 만들었다. 
 
-BASE_DIR 위치에 templates 폴더 만들고 공유한 index.html 파일 넣기 
+앞으로 채팅 페이지에서 챗에 대한 세션 관리를 하기 위해 미리 아래와 같은 작업을 해준다. 
 
+chatbot 폴더에 serializers.py 파일을 만들고 아래 코드 넣기 
 
-__static__
+```python 
 
-front end, 열심히 주서오기 
+from rest_framework import serializers
+from .models import ChatSession
 
-static 폴더 만들고 그 안에 home 폴더 만들고 공유한 .js 파일과 .css 파일 넣기 
-
-
-
-
-### core/settings.py
-
-
-ALLOWED_HOSTS = ['*']
-
-core/settings.py에 TEMPLATES
-
-__TEMPLATES의 DIRS 아래와 같이 고치기__
+class MessageSerializer(serializers.Serializer):
+    question = serializers.CharField(help_text='사용자 메시지')
+    session_id = serializers.CharField(help_text='세션 ID', required=False)
 
 
-
-```python
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates')], # template 경로 설정
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
-```
-
-__언어랑 시간 바꾸기__
-
-```python
-
-# # LANGUAGE_CODE = 'en-us'
-LANGUAGE_CODE = "ko-kr"
-
-# TIME_ZONE = "UTC"
-TIME_ZONE = 'Asia/Seoul'
+class ChatSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatSession
+        fields = ['session_id', 'start_time', 'end_time', 'chat_history']
 
 ```
 
-__static 폴더를 정적파일에 추가__
+### 2. chatbot/views.py 
 
-아래 코드 넣기 
-
-```python
-# root 아래의 static 폴더를 정적파일에 추가
-STATICFILES_DIRS = [ BASE_DIR / 'static', ]
-```
-
-
-__Application 초기화__
-
-core/settings.py에 INSTALLED_APPS에 
-"chatbot" 추가 
+다음 코드 넣기 
 
 ```python
-# Application 초기화
-INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "chatbot",
-]
-```
-
-### core/urls.py 
-
-아래와 같이 코드 바꾸기 
-
-```python
-
-from django.contrib import admin
-from django.urls import path, include
 
 from django.shortcuts import render
+from django.views.generic import TemplateView
 
-def index(request):
-    return render(request, 'index.html')
+from .serializers import MessageSerializer 
 
-urlpatterns = [
-    path("admin/", admin.site.urls),
-    path('', index),     
-    path('chatbot/', include('chatbot.urls')),         
-]
 
+import uuid
+
+from drf_yasg.utils import swagger_auto_schema
+
+class ChatbotIndexView(TemplateView):
+    template_name = "chatbot/index.html"
+    
+    @swagger_auto_schema(
+        operation_id='첫 접속 시 새 채팅 시작',
+        operation_description='채팅 페이지 첫 접속 시 새로운 세션 생성',
+        tags=['Chat'],
+        request_body=MessageSerializer,
+        responses={200: 'Success'}
+    )
+    def get(self, request, *args, **kwargs):
+        if not request.session.get('session_id'):
+            session_id = str(uuid.uuid4())
+            request.session['session_id'] = session_id
+            request.session['question'] = None
+            request.session['answer'] = None
+            print(f'새로운 세션 생성 >> {session_id}')
+        
+        return render(request, self.template_name)
 
 ```
 
-**완성** 
 
-![image](https://github.com/khw11044/llm_rag_start_note/assets/51473705/6f440d96-6a4b-44d2-937b-6b3bfcc8fbba)
+swagger 공부하기 
 
+[링크1](https://velog.io/@lu_at_log/drf-yasg-and-swagger)
+
+[링크1](https://hello-cruiser.tistory.com/entry/%EB%AC%B8%EC%84%9C%ED%99%94%EB%A5%BC-%EC%9C%84%ED%95%9C-drf-yasg-%EC%A0%81%EC%9A%A9%ED%95%98%EA%B8%B0)
+
+
+### 3. chatbot/urls.py
+
+```python
+
+from django.urls import path, include
+from .views import ChatbotIndexView
+
+from . import views
+
+app_name = 'chatbot'
+urlpatterns = [
+    path('', ChatbotIndexView.as_view(), name='chatbot_index'),
+]
+
+```
+
+
+### templates 
+
+코드 업데이트 
+
+'채팅 시작하기' 버튼 클릭하면 'chatbot:chatbot_index' 로 페이지 이동 
+
+templates/index.html 
+
+```html
+
+<div class="wrapper">
+    <div class="hero-container">
+        <div class="hero">
+            <h1 class="hero__heading">당신의 도전이 조금 더 쉬어지도록 </h1>
+            <h3 class="hero__heading"> 리트리버가 당신의 도전을 보조할께요 </h3>
+            <a class="btn" href="#" title="채팅 시작하기">채팅 시작하기</a>
+        </div>
+        <div class="hero hero--secondary" aria-hidden="true" data-hero>
+            <p class="hero__heading">Welcome to Retriver</p>
+            <a class="btn" href="{% url 'chatbot:chatbot_index' %}" title="채팅 시작하기">채팅 시작하기</a>
+        </div>
+    </div>
+</div>
+
+```
+
+templates/chatbot 폴더 추가 하기 
+
+static/chatbot 폴더 추가 하기 
 
 
 
