@@ -111,6 +111,8 @@ class ChatSessionAdmin(admin.ModelAdmin):
 
 ![image](https://github.com/khw11044/llm_rag_start_note/assets/51473705/14cf365d-b794-4635-bebd-a0ead19cb520)
 
+![image](https://github.com/khw11044/llm_rag_start_note/assets/51473705/9424683b-14e0-4d85-9487-d181caad84d1)
+
 documents 폴더를 보면 내가 올린 pdf파일이 있다. 
 
 와 이제 맘껏 데이터를 모을 수 있다~ 
