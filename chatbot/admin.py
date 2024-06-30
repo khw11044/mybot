@@ -21,10 +21,28 @@ class DocumentAdmin(admin.ModelAdmin):
         # 임시로 문서 저장
         super().save_model(request, obj, form, change)
         
-       
+        # 전역 pipeline 객체를 가져옴
+        pipeline = apps.get_app_config('chatbot').pipeline
+        
+        # 벡터 DB에 문서 업데이트 시도
+        file_path = obj.file.path
+        with open(file_path, 'rb') as f:
+            if pipeline.update_vector_db(f, obj.file):
+                self.message_user(request, "[문서업로드] 벡터 스토어 업데이트에 성공하였습니다.")
+            else:
+                # 유사한 문서가 존재하여 업데이트에 실패 시 저장된 문서 삭제
+                obj.delete()
+                os.remove(file_path)
+                self.message_user(request, "[문서업로드] 유사한 문서가 발견되어 벡터스토어 업데이트가 거절되었습니다.", level='error')
+
 
     def delete_model(self, request, obj):
-       
+        # 전역 pipeline 객체를 가져옴
+        pipeline = apps.get_app_config('chatbot').pipeline
+        
+        # 벡터 DB에서 문서 임베딩 삭제
+        pipeline.delete_vector_db_by_doc_id(str(obj.id))
+        
         # 문서 및 메타데이터 삭제
         file_path = obj.file.path
         super().delete_model(request, obj)
